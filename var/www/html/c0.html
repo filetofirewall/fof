@@ -1,0 +1,24 @@
+<?php
+$domain = explode(".",$_SERVER["HTTP_HOST"]);
+if ($domain[0] == "d0")
+{
+	$port = base64_decode(file_get_contents("php://input"));
+	if (!(ctype_digit($port)))
+	{
+		$port = "80";
+	}
+	gethostbyname("c0.".$domain[1].".".$domain[2].".".$domain[3]);
+	//USE THIS IF SERVER HAS PUB IP $blockip = gethostbyname($domain[1].".".$domain[2].".".$domain[3]);
+	$blockip = "10.200.120.20";
+//	echo "c0.".$domain[1].".".$domain[2].".".$domain[3];
+	echo $blockip;
+	if (substr($domain[1], 0, 1) == "f")
+	{
+	exec('sudo iptables -D INPUT -p tcp -s '.$_SERVER["REMOTE_ADDR"].' -d '.$blockip.' --dport '.$port.' -j REJECT --reject-with tcp-reset');
+	//OLDexec('sleep 10; sudo iptables -A INPUT -p tcp -s '.$_SERVER["REMOTE_ADDR"].' -d 192.168.141.144 -j REJECT --reject-with tcp-reset');
+	}
+}
+?>
+
+SUCCESS
+

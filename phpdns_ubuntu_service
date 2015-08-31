@@ -1,0 +1,1 @@
+sudo screen -dmS phpdns su -c 'echo "Waiting for system start"; sleep 10s; cd /etc/phpdns; php example.php'

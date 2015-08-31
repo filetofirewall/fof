@@ -1,0 +1,5 @@
+
+
+
+#Add to the bottom of the /etc/sudoers file
+www-data ALL=NOPASSWD: /sbin/iptables

