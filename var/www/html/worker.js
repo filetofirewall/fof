@@ -65,7 +65,7 @@ function workermessage(e) {
 	console.log('Message received from worker: ' + e.data[0]);
 	if (e.data[0] == "Logs")
 	{
-		logs = logs + e.data[1];
+		logs += e.data[1];
 		postlogs();
 	}
 }
@@ -150,7 +150,7 @@ function openNet(net) {
 		controlurl = "http://" + uniqdom + ":" + location.port + corrurl;
   		workers[i].postMessage([chunk, controlurl, schematype, startportnum]);
 		//Add correct amount of ports based on number of ports to open times num of hosts in the chunk
-		startportnum = startportnum + (sectionsize * portsize);
+		startportnum += (sectionsize * portsize);
 		console.log('Startportnum changed to : ' + startportnum);
   }
   //opnip(tmparray);
