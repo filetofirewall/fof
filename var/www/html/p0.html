@@ -1,12 +1,11 @@
 <html>
-<body>
-<?php
+    <body>
+        <?php
+            $files = glob('testup/*.{html}', GLOB_BRACE);
 
-$files = glob('testup/*.{html}', GLOB_BRACE);
-foreach($files as $file) {
-	echo '<iframe src="'.$file.'"></iframe>';
-}
-
-?>
-</body>
+            foreach($files as $file) {
+                echo '<iframe src="'.$file.'"></iframe>';
+            }
+        ?>
+    </body>
 <html>
