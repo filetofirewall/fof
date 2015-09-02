@@ -61,7 +61,7 @@ Google Chrome recently changed some of its behavior in regards to how it handles
    * Can be set to exploit Weak End System Model by adding the public IP of the gateway instead of the internal IP of the gateway.
 11. Wopen.html
    * Displays some content (usually a video).
-   * Loads script.js.
+   * Loads worker.js.
 12. C1.html
    * Accepts port in POST parameters and adds iptables rule blocking the port on the webserver to the IP address who made the request.
 13. C0.html
