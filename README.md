@@ -1,6 +1,8 @@
 # Filet-O-Firewall Vulnerability PoC
 
-This is the Proof of Concept code to exploit the Filet-O-Firewall vulnerability.
+This is the Proof of Concept code to exploit the Filet-O-Firewall vulnerability. 
+
+CERT VU#361684 http://www.kb.cert.org/vuls/id/361684
 
 The code is currently being cleaned up to be more easily digestable, but it is working at the moment.
 
