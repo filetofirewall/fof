@@ -7,7 +7,7 @@ use StorageProvider\AbstractStorageProvider;
 class JsonStorageProvider extends AbstractStorageProvider
 {
     private $dns_records;
-    private $DS_TYPES = array(1 => 'A', 2 => 'NS', 5 => 'CNAME', 6 => 'SOA', 12 => 'PTR', 15 => 'MX', 16 => 'TXT', 28 => 'AAAA', 41 => 'OPT', 252 => 'AXFR', 255 => 'ANY');
+    private $DS_TYPES = [1 => 'A', 2 => 'NS', 5 => 'CNAME', 6 => 'SOA', 12 => 'PTR', 15 => 'MX', 16 => 'TXT', 28 => 'AAAA', 41 => 'OPT', 252 => 'AXFR', 255 => 'ANY'];
     private $DS_TTL = 0;
 
 
@@ -44,7 +44,7 @@ class JsonStorageProvider extends AbstractStorageProvider
         //$cacheAvailable = $memcache->connect(MEMCACHED_HOST, MEMCACHED_PORT);
         global $memcache;
 
-        $answer = array();
+        $answer = [];
         $domain = trim($question[0]['qname'], '.');
         $defdomain = "test.chrome";
         $defchgdomain = "test.change";
@@ -53,7 +53,7 @@ class JsonStorageProvider extends AbstractStorageProvider
         //$mcdomain = array(); //Memcache Variable
         $cdns = explode(".", $question[0]['qname']);
         $cdns_ct = count($cdns);
-        $mcdomain = array();
+        $mcdomain = [];
         $type = $this->DS_TYPES[$question[0]['qtype']];
 
 
@@ -87,10 +87,10 @@ class JsonStorageProvider extends AbstractStorageProvider
                     array_unshift($mcdomain, $this->dns_records[$defdomain][$type]);
                     //INCORRECT: $this->dns_records[$defdomain][$type][1] = $mcdomain;
                 } else {
-                    $mcdomain = array();
+                    $mcdomain = [];
                 }
             } else {
-                $mcdomain = array();
+                $mcdomain = [];
             }
             $defdomain = $defmultidomain;
             echo "Domain section count: " . count($cdns) . "\n";
@@ -104,78 +104,78 @@ class JsonStorageProvider extends AbstractStorageProvider
             if (is_array($this->dns_records[$domain][$type])) {
                 foreach ($this->dns_records[$domain][$type] as $ip) {
                     echo 'Returning array record: ' . $ip;
-                    $answer[] = array(
+                    $answer[] = [
                         'name' => $question[0]['qname'],
                         'class' => $question[0]['qclass'],
                         'ttl' => $this->DS_TTL,
-                        'data' => array(
+                        'data' => [
                             'type' => $question[0]['qtype'],
                             'value' => $ip
-                        )
-                    );
+                        ]
+                    ];
                 }
             } else {
                 echo 'Returning record: ' . $this->dns_records[$domain][$type];
-                $answer[] = array(
+                $answer[] = [
                     'name' => $question[0]['qname'],
                     'class' => $question[0]['qclass'],
                     'ttl' => $this->DS_TTL,
-                    'data' => array(
+                    'data' => [
                         'type' => $question[0]['qtype'],
                         'value' => $this->dns_records[$domain][$type]
-                    )
-                );
+                    ]
+                ];
             }
         } //Check with memcache
         else if (($cdns_ct == 4) && (count($mcdomain) > 0)) {
             if (is_array($mcdomain)) {
                 foreach ($mcdomain as $ip) {
-                    $answer[] = array(
+                    $answer[] = [
                         'name' => $question[0]['qname'],
                         'class' => $question[0]['qclass'],
                         'ttl' => $this->DS_TTL,
-                        'data' => array(
+                        'data' => [
                             'type' => $question[0]['qtype'],
                             'value' => $ip
-                        )
-                    );
+                        ]
+                    ];
                 }
             } else {
-                $answer[] = array(
+                $answer[] = [
                     'name' => $question[0]['qname'], //"wpad.com",
                     'class' => $question[0]['qclass'],
                     'ttl' => $this->DS_TTL,
-                    'data' => array(
+                    'data' => [
                         'type' => $question[0]['qtype'],
                         'value' => $mcdomain //"192.168.141.144"
-                    )
-                );
+                    ]
+                ];
             }
         } //RETURN DEFAULT ANSWER FOR UNKOWN QUERY FOR DOMAIN
         else if (isset($this->dns_records[$defdomain]) && isset($this->dns_records[$defdomain][$type])) {
             if (is_array($this->dns_records[$defdomain][$type])) {
                 foreach ($this->dns_records[$defdomain][$type] as $ip) {
-                    $answer[] = array(
+                    $answer[] = [
                         'name' => $question[0]['qname'],
                         'class' => $question[0]['qclass'],
                         'ttl' => $this->DS_TTL,
-                        'data' => array(
+                        'data' => [
                             'type' => $question[0]['qtype'],
                             'value' => $ip
-                        )
-                    );
+                        ]
+                    ];
                 }
             } else {
                 echo 'Returning default: ' . $this->dns_records[$defdomain][$type];
-                $answer[] = array(
+                $answer[] = [
                     'name' => $question[0]['qname'], //"wpad.com",
                     'class' => $question[0]['qclass'],
                     'ttl' => $this->DS_TTL,
-                    'data' => array(
+                    'data' => [
                         'type' => $question[0]['qtype'],
                         'value' => $this->dns_records[$defdomain][$type] //"192.168.141.144"
-                    )
-                );
+                    ]
+                ];
             }
         }
 

@@ -15,7 +15,7 @@ class PHP_DNS_SERVER
     private $DS_TYPE_OPT = 41;
     private $DS_TYPE_AXFR = 252;
     private $DS_TYPE_ANY = 255;
-    private $DS_TYPES = array(1 => 'A', 2 => 'NS', 5 => 'CNAME', 6 => 'SOA', 12 => 'PTR', 15 => 'MX', 16 => 'TXT', 28 => 'AAAA', 41 => 'OPT', 252 => 'AXFR', 255 => 'ANY');
+    private $DS_TYPES = [1 => 'A', 2 => 'NS', 5 => 'CNAME', 6 => 'SOA', 12 => 'PTR', 15 => 'MX', 16 => 'TXT', 28 => 'AAAA', 41 => 'OPT', 252 => 'AXFR', 255 => 'ANY'];
 
     private $ds_storage;
 
@@ -30,7 +30,7 @@ class PHP_DNS_SERVER
         ini_set('display_errors', TRUE);
         ini_set('error_reporting', E_ALL);
 
-        set_error_handler(array($this, 'ds_error'), E_ALL);
+        set_error_handler([$this, 'ds_error'], E_ALL);
         set_time_limit(0);
 
         if (!extension_loaded('sockets') || !function_exists('socket_create')) {
@@ -104,7 +104,7 @@ class PHP_DNS_SERVER
 
     private function ds_decode_flags($flags)
     {
-        $res = array();
+        $res = [];
 
         $res['qr'] = $flags >> 15 & 0x1;
         $res['opcode'] = $flags >> 11 & 0xf;
@@ -120,7 +120,7 @@ class PHP_DNS_SERVER
 
     private function ds_decode_question_rr($pkt, &$offset, $count)
     {
-        $res = array();
+        $res = [];
 
         for ($i = 0; $i < $count; ++$i) {
             if ($offset > strlen($pkt)) return false;
@@ -177,7 +177,7 @@ class PHP_DNS_SERVER
 
     private function ds_decode_rr($pkt, &$offset, $count)
     {
-        $res = array();
+        $res = [];
 
         for ($i = 0; $i < $count; ++$i) {
             // read qname
@@ -196,7 +196,7 @@ class PHP_DNS_SERVER
 
     private function ds_decode_type($type, $val)
     {
-        $data = array();
+        $data = [];
 
         switch ($type) {
             case $this->DS_TYPE_A:
@@ -214,7 +214,7 @@ class PHP_DNS_SERVER
                 $data['value'] = $this->ds_decode_label($val, $foo_offset);
                 break;
             case $this->DS_TYPE_SOA:
-                $data['value'] = array();
+                $data['value'] = [];
                 $offset = 0;
                 $data['value']['mname'] = $this->ds_decode_label($val, $offset);
                 $data['value']['rname'] = $this->ds_decode_label($val, $offset);
@@ -231,10 +231,10 @@ class PHP_DNS_SERVER
                 break;
             case $this->DS_TYPE_MX:
                 $tmp = unpack('n', $val);
-                $data['value'] = array(
+                $data['value'] = [
                     'priority' => $tmp[0],
                     'host' => substr($val, 2),
-                );
+                ];
                 break;
             case $this->DS_TYPE_TXT:
                 $len = ord($val[0]);
@@ -254,13 +254,13 @@ class PHP_DNS_SERVER
                 break;
             case $this->DS_TYPE_OPT:
                 $data['type'] = $this->DS_TYPE_OPT;
-                $data['value'] = array(
+                $data['value'] = [
                     'type' => $this->DS_TYPE_OPT,
                     'ext_code' => $this->DS_TTL >> 24 & 0xff,
                     'udp_payload_size' => 4096,
                     'version' => $this->DS_TTL >> 16 & 0xff,
                     'flags' => $this->ds_decode_flags($this->DS_TTL & 0xffff)
-                );
+                ];
                 break;
             default:
                 $data['value'] = $val;
@@ -396,11 +396,11 @@ class PHP_DNS_SERVER
             case $this->DS_TYPE_ANY:
                 return '';
             case $this->DS_TYPE_OPT:
-                $res = array(
+                $res = [
                     'class' => $val['udp_payload_size'],
                     'ttl' => (($val['ext_code'] & 0xff) << 24) | (($val['version'] & 0xff) << 16) | ($this->ds_encode_flags($val['flags']) & 0xffff),
                     'data' => '', // TODO: encode data
-                );
+                ];
 
                 return $res;
             default:
@@ -414,7 +414,7 @@ class PHP_DNS_SERVER
             return;
         }
 
-        $codes = array(
+        $codes = [
             E_ERROR => 'Error',
             E_WARNING => 'Warning',
             E_PARSE => 'Parse Error',
@@ -430,7 +430,7 @@ class PHP_DNS_SERVER
             E_RECOVERABLE_ERROR => 'Recoverable Error',
             E_DEPRECATED => 'Deprecated Error',
             E_USER_DEPRECATED => 'User Deprecated Error'
-        );
+        ];
 
         $type = isset($codes[$code]) ? $codes[$code] : 'Unknown Error';
 
